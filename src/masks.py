@@ -3,9 +3,8 @@ def get_mask_card_number(card_number: str) -> str:
     Показывает первые 6 и последние 4 цифры, остальные — звёздочками."""
     # Удаляем все пробелы на случай, если номер введён с ними
     digits = ''.join(card_number.split())
-    if len(digits) < 10:
+    if len(digits) < 10 or not digits.isdigit():
         raise ValueError("Некорректный номер карты")
-    # Формируем маску
     first_4 = digits[:4]
     next_2 = digits[4:6]
     mask_2 = '**'
@@ -17,6 +16,7 @@ def get_mask_account(account_number: str) -> str:
     """ Маскирует номер счёта в формате **XXXX.
     Показывает только последние 4 цифры, остальные — звёздочками."""
     digits = ''.join(account_number.split())
-    if len(digits) < 4:
+    if len(digits) < 4 or not digits.isdigit():
         raise ValueError("Некорректный номер счёта")
     return f"**{digits[-4:]}"
+
