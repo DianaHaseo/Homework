@@ -75,6 +75,10 @@ for _ in range(5):
 for card_number in card_number_generator(1, 5):
     print(card_number)
 ```
+## В проект был добавлен новый модуль decorators и тест к нему для проверки работы кода
+
+В данном файле мы учимся применять декораторы
+
 
 ## Документация:
 
