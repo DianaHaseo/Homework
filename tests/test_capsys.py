@@ -49,4 +49,4 @@ def test_log_file_failure(tmp_path):
         temp_fail(77)
     with open(log_file, encoding='utf-8') as f:
         content = f.read()
-        assert "temp_fail error: RuntimeError. Inputs: (77), {}" in content
+        assert "temp_fail error: RuntimeError. Inputs: (77,), {}" in content
