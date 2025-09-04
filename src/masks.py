@@ -1,3 +1,24 @@
+import logging
+import os
+
+def setup_logger(name: str) -> logging.Logger:
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    logger = logging.getLogger('masks')
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler = logging.FileHandler('logs/masks.log', mode='w')
+    file_handler.setFormatter(formatter)
+    if logger.hasHandlers():
+        logger.handlers.clear()
+    logger.addHandler(file_handler)
+    return logger
+
+masks_logger = setup_logger('masks')
+masks_logger.info('Маскировка карты выполнена для: 1234567890123456')
+masks_logger.error('Ошибка при маскировке карты: Некорректный номер карты')
+masks_logger.info('Маскировка счета выполнена для: 1234567890')
+
 def get_mask_card_number(card_number: str) -> str:
     """Маскирует номер карты в формате XXXX XX** **** XXXX.
     Показывает первые 6 и последние 4 цифры, остальные — звёздочками."""
