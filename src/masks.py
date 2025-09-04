@@ -20,24 +20,3 @@ def get_mask_account(account_number: str) -> str:
     if len(digits) < 4 or not digits.isdigit():
         raise ValueError("Некорректный номер счёта")
     return f"**{digits[-4:]}"
-
-import logging
-import os
-
-def setup_logger(name: str) -> logging.Logger:
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
-    logger = logging.getLogger('masks')
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler('logs/masks.log', mode='w')
-    file_handler.setFormatter(formatter)
-    if logger.hasHandlers():
-        logger.handlers.clear()
-    logger.addHandler(file_handler)
-    return logger
-
-masks_logger = setup_logger('masks')
-masks_logger.info('Маскировка карты выполнена для: 1234567890123456')
-masks_logger.error('Ошибка при маскировке карты: Некорректный номер карты')
-masks_logger.info('Маскировка счета выполнена для: 1234567890')
