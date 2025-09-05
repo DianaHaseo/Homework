@@ -41,4 +41,3 @@ def get_mask_account(account_number: str) -> str:
     if len(digits) < 4 or not digits.isdigit():
         raise ValueError("Некорректный номер счёта")
     return f"**{digits[-4:]}"
-
