@@ -87,3 +87,5 @@ def load_transactions_from_json(file_path: str) -> List[Dict[str, Any]]:
 
     # Завершение работы логгов в конце программы
     logging.shutdown()
+
+
