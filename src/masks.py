@@ -49,5 +49,3 @@ def get_mask_account(account_number: str) -> str:
     masked = f"**{digits[-4:]}"
     masks_logger.info(f'Успешно замаскирован номер счета: {masked}')
     return masked
-
-logging.shutdown()

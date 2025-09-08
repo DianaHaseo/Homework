@@ -50,4 +50,3 @@ def load_transactions_from_json(file_path: str) -> List[Dict[str, Any]]:
         utils_logger.error(f'Неожиданная ошибка при загрузке файла {abs_path}: {e}')
         return []
 
-logging.shutdown()
