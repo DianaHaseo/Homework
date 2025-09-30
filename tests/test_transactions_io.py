@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import mock_open, patch, MagicMock
-from transactions_io import read_transactions_from_csv, read_transactions_from_excel
+from src.transactions_io import read_transactions_from_csv, read_transactions_from_excel
 
 def test_read_transactions_from_csv():
     csv_content = "id,amount,currency\n1,100,RUB\n2,200,USD\n"
