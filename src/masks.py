@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 # Настройка логгера для модуля masks
 def setup_logger(masks: str) -> logging.Logger:
@@ -17,35 +18,52 @@ def setup_logger(masks: str) -> logging.Logger:
     logger.propagate = False
     return logger
 
+
 masks_logger = setup_logger('masks')
 
+
 def get_mask_card_number(card_number: str) -> str:
-    """Маскирует номер карты в формате XXXX XX** **** XXXX. Показывает первые 6 и последние 4 цифры."""
-    digits = "".join(card_number.split())
-    if len(digits) == 0:
-        masks_logger.error("Нулевая длина номера карты")
-        raise ValueError("Нулевая длина номера карты")
-    if len(digits) != 16 or not digits.isdigit():
-        masks_logger.error("Нестандартный номер карты, должно быть 16-значное число")
-        raise ValueError("Нестандартный номер карты, должно быть 16-значное число")
-    first_4 = digits[:4]
-    next_2 = digits[4:6]
-    mask_2 = "**"
-    mask_4 = "****"
-    last_4 = digits[-4:]
-    masked = f"{first_4} {next_2}{mask_2} {mask_4} {last_4}"
-    masks_logger.info(f'Успешно замаскирован номер карты: {masked}')
-    return masked
+    """
+    Маскирует номер карты.
+    Если цифр больше 16 — берёт последние 16.
+    Если меньше 10 — вызывает ошибку.
+    """
+    digits = "".join(re.findall(r"\d", card_number))
+
+    if not digits:
+        raise ValueError("Номер карты не содержит цифр")
+
+    if len(digits) < 10:
+        raise ValueError("Слишком короткий номер карты")
+
+    # Если больше 16 цифр — используем последние 16
+    if len(digits) > 16:
+        digits = digits[-16:]
+
+    return f"{digits[:4]} {digits[4:6]}** **** {digits[-4:]}"
 
 def get_mask_account(account_number: str) -> str:
-    """Маскирует номер счёта в формате **XXXX. Показывает только последние 4 цифры."""
-    digits = "".join(account_number.split())
+    """
+    Маскирует номер счёта. Поддерживает формат вроде 'Счет 40817810099910004312'.
+    Показывает только последние 4 цифры.
+    """
+    digits = "".join(re.findall(r"\d", account_number))
+
     if len(digits) == 0:
         masks_logger.error("Нулевая длина номера счета")
         raise ValueError("Нулевая длина номера счета")
-    if len(digits) != 20 or not digits.isdigit():
+
+    if len(digits) != 20:
         masks_logger.error("Нестандартный номер счета, должно быть 20-значное число")
         raise ValueError("Нестандартный номер счета, должно быть 20-значное число")
-    masked = f"**{digits[-4:]}"
+
+    masked_number = f"**{digits[-4:]}"
+
+    # Добавляем слово "Счет" если оно было
+    if "Счет" in account_number or "счет" in account_number:
+        masked = f"Счет {masked_number}"
+    else:
+        masked = masked_number
+
     masks_logger.info(f'Успешно замаскирован номер счета: {masked}')
     return masked
