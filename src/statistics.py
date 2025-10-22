@@ -1,21 +1,19 @@
-from collections import Counter
-from typing import List, Dict, Any
-
-
-def count_operations_by_categories(transactions: List[Dict[str, Any]], categories: List[str]) -> Dict[str, int]:
+def process_bank_operations(data: list[dict], categories: list[str]) -> dict:
     """
-    Подсчитывает количество операций по заданным категориям на основе поля 'description'.
-
-    :param transactions: список транзакций (каждая транзакция — словарь с ключом 'description')
-    :param categories: список категорий (слов, по которым искать совпадения в описании)
-    :return: словарь вида {категория: количество операций}
+    Возвращает словарь с количеством операций по категориям (по description).
     """
-    counter = Counter()
+    if not isinstance(data, list):
+        raise TypeError("Данные должны быть списком словарей")
 
-    for tx in transactions:
-        description = str(tx.get('description', '')).lower()
+    if not isinstance(categories, list):
+        raise TypeError("Список категорий должен быть списком строк")
+
+    result = {category: 0 for category in categories}
+
+    for item in data:
+        desc = item.get("description", "").lower()
         for category in categories:
-            if category.lower() in description:
-                counter[category] += 1
+            if category.lower() in desc:
+                result[category] += 1
 
-    return dict(counter)
+    return result

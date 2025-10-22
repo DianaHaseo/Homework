@@ -22,48 +22,27 @@ def setup_logger(masks: str) -> logging.Logger:
 masks_logger = setup_logger('masks')
 
 
-def get_mask_card_number(card_number: str) -> str:
-    """
-    Маскирует номер карты.
-    Если цифр больше 16 — берёт последние 16.
-    Если меньше 10 — вызывает ошибку.
-    """
-    digits = "".join(re.findall(r"\d", card_number))
+def get_mask_card_number(number: str) -> str:
+    """Маскирует номер карты (16 цифр)."""
+    if len(number) != 16 or not number.isdigit():
+        raise ValueError("Неверный номер карты")
+    return f"{number[:4]} {number[4:6]}** **** {number[-4:]}"
 
-    if not digits:
-        raise ValueError("Номер карты не содержит цифр")
 
-    if len(digits) < 10:
-        raise ValueError("Слишком короткий номер карты")
+def get_mask_account(number: str) -> str:
+    """Маскирует счет (20 цифр)."""
+    if len(number) != 20 or not number.isdigit():
+        raise ValueError("Неверный счет")
+    return f"**{number[-4:]}"
 
-    # Если больше 16 цифр — используем последние 16
-    if len(digits) > 16:
-        digits = digits[-16:]
 
-    return f"{digits[:4]} {digits[4:6]}** **** {digits[-4:]}"
-
-def get_mask_account(account_number: str) -> str:
-    """
-    Маскирует номер счёта. Поддерживает формат вроде 'Счет 40817810099910004312'.
-    Показывает только последние 4 цифры.
-    """
-    digits = "".join(re.findall(r"\d", account_number))
-
-    if len(digits) == 0:
-        masks_logger.error("Нулевая длина номера счета")
-        raise ValueError("Нулевая длина номера счета")
-
-    if len(digits) != 20:
-        masks_logger.error("Нестандартный номер счета, должно быть 20-значное число")
-        raise ValueError("Нестандартный номер счета, должно быть 20-значное число")
-
-    masked_number = f"**{digits[-4:]}"
-
-    # Добавляем слово "Счет" если оно было
-    if "Счет" in account_number or "счет" in account_number:
-        masked = f"Счет {masked_number}"
-    else:
-        masked = masked_number
-
-    masks_logger.info(f'Успешно замаскирован номер счета: {masked}')
-    return masked
+def mask_card_or_account(text: str) -> str:
+    """Определяет и маскирует счет или карту в строке."""
+    import re
+    digits = re.findall(r"\d+", text)
+    for number in digits:
+        if len(number) == 16:
+            return get_mask_card_number(number)
+        elif len(number) == 20:
+            return get_mask_account(number)
+    raise ValueError("Не найден номер карты или счета")

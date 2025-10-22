@@ -1,35 +1,39 @@
 import pytest
-from src.search import search_transactions_by_description
-
-# Пример списка транзакций для тестов
-transactions = [
-    {"date": "2023-01-10", "description": "Оплата покупок в магазине", "amount": "1000", "currency": "RUB"},
-    {"date": "2023-02-01", "description": "Перевод другу", "amount": "200", "currency": "USD"},
-    {"date": "2023-03-15", "description": "Покупка билетов на поезд", "amount": "3000", "currency": "RUB"},
-]
+from src.search import process_bank_search
 
 
-def test_search_exact_word():
-    """Проверяет, что поиск находит точное слово в описании"""
-    result = search_transactions_by_description(transactions, "магазине")
+@pytest.fixture
+def transactions_data():
+    return [
+        {"description": "Перевод организации", "amount": 5000},
+        {"description": "Открытие вклада", "amount": 10000},
+        {"description": "Перевод на карту", "amount": 2500},
+        {"description": "Пополнение счета", "amount": 3000},
+    ]
+
+
+def test_search_single_match(transactions_data):
+    result = process_bank_search(transactions_data, "вклад")
     assert len(result) == 1
-    assert result[0]["description"] == "Оплата покупок в магазине"
+    assert result[0]["description"] == "Открытие вклада"
 
 
-def test_search_case_insensitive():
-    """Поиск должен быть нечувствительным к регистру"""
-    result = search_transactions_by_description(transactions, "ПОКУПКА")
-    assert len(result) == 1
-    assert "Покупка" in result[0]["description"]
+def test_search_multiple_matches(transactions_data):
+    result = process_bank_search(transactions_data, "перевод")
+    assert len(result) == 2
+    assert all("перевод" in item["description"].lower() for item in result)
 
 
-def test_search_multiple_matches():
-    """Если совпадений несколько — все они возвращаются"""
-    result = search_transactions_by_description(transactions, "покуп")
-    assert len(result) == 2  # 'покупок' и 'Покупка билетов...'
+def test_search_case_insensitive(transactions_data):
+    result = process_bank_search(transactions_data, "ПЕРЕВОД")
+    assert len(result) == 2
 
 
-def test_search_no_matches():
-    """Если совпадений нет — возвращается пустой список"""
-    result = search_transactions_by_description(transactions, "не существует")
+def test_search_no_match(transactions_data):
+    result = process_bank_search(transactions_data, "неизвестно")
     assert result == []
+
+
+def test_search_invalid_input(transactions_data):
+    with pytest.raises(ValueError):
+        process_bank_search(transactions_data, "")

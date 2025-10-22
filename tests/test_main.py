@@ -1,25 +1,50 @@
 import builtins
 import pytest
-from src.search import search_transactions_by_description
-from src.statistics import count_operations_by_categories
-
-# Пример данных, которые могли бы быть загружены из файла
-transactions = [
-    {"date": "2023-01-01", "description": "Покупка продуктов", "amount": "1500", "currency": "RUB"},
-    {"date": "2023-02-10", "description": "Перевод другу", "amount": "200", "currency": "USD"},
-    {"date": "2023-03-05", "description": "Снятие наличных в банкомате", "amount": "5000", "currency": "RUB"},
-]
+from src.main import main
 
 
-def test_search_integration():
-    """Интеграционный тест: проверяем связку поиска и данных"""
-    result = search_transactions_by_description(transactions, "продукт")
-    assert len(result) == 1
-    assert result[0]["description"] == "Покупка продуктов"
+@pytest.fixture
+def mock_data(monkeypatch):
+    """Мокаем ввод пользователя и перехватываем вывод."""
+    inputs = iter([
+        "1",          # выбор файла JSON
+        "EXECUTED",   # фильтр по статусу
+        "да",         # сортировать по дате
+        "по возрастанию",
+        "да",         # только рублевые
+        "нет",        # не фильтровать по слову
+    ])
+    monkeypatch.setattr(builtins, "input", lambda *args: next(inputs))
+
+    printed = []
+    monkeypatch.setattr("builtins.print", lambda *args, **kwargs: printed.append(" ".join(map(str, args))))
+    return printed
 
 
-def test_statistics_integration():
-    """Интеграционный тест: проверяем подсчет категорий"""
-    categories = ["Покупка", "Снятие"]
-    result = count_operations_by_categories(transactions, categories)
-    assert result == {"Покупка": 1, "Снятие": 1}
+def test_main_normal_run(mock_data):
+    """Проверяет корректный сценарий выполнения main()."""
+    main()
+    assert any("Привет!" in line for line in mock_data)
+    assert any("Операции отфильтрованы по статусу" in line for line in mock_data)
+    assert any("Распечатываю итоговый список транзакций" in line for line in mock_data)
+
+
+def test_main_invalid_status(monkeypatch):
+    """Проверяет обработку некорректного статуса пользователя."""
+    inputs = iter([
+        "1",          # выбор файла JSON
+        "TEST",       # неверный статус
+        "EXECUTED",   # потом правильный
+        "нет",        # не сортировать
+        "нет",        # не фильтровать
+        "нет",        # не фильтровать по слову
+    ])
+    printed = []
+    # lambda *args принимает любой вызов input()
+    monkeypatch.setattr(builtins, "input", lambda *args: next(inputs))
+    monkeypatch.setattr("builtins.print", lambda *args, **kwargs: printed.append(" ".join(map(str, args))))
+
+    main()
+
+    # Проверяем, что сообщение об ошибочном статусе выводилось
+    assert any('Статус операции "TEST" недоступен.' in line for line in printed)
