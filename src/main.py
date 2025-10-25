@@ -14,24 +14,29 @@ def main():
     file_choice = input().strip()
 
     if file_choice == "1":
-        data = read_json("data.json")
+        data = read_json("data/operations.json")
         print("Для обработки выбран JSON-файл.")
     elif file_choice == "2":
-        data = read_csv("data.csv")
+        data = read_csv("data/operations.csv")
         print("Для обработки выбран CSV-файл.")
     elif file_choice == "3":
-        data = read_xlsx("data.xlsx")
+        data = read_xlsx("data/operations.xlsx")
         print("Для обработки выбран XLSX-файл.")
     else:
-        print("Неверный выбор файла")
+        print("Неверный выбор файла.")
         return
 
-    # Проверка статуса
+    if not data:
+        print("Не удалось загрузить данные из файла.")
+        return
+
+    # Ввод статуса
     valid_statuses = ["EXECUTED", "CANCELED", "PENDING"]
     while True:
         print("\nВведите статус, по которому необходимо выполнить фильтрацию.")
         print("Доступные для фильтровки статусы:", ", ".join(valid_statuses))
         status = input().strip().upper()
+
         if status in valid_statuses:
             filtered = filter_by_status(data, status)
             print(f'Операции отфильтрованы по статусу "{status}"')
@@ -39,32 +44,29 @@ def main():
         else:
             print(f'Статус операции "{status}" недоступен.')
 
-    # Сортировка по дате
+    # Сортировка
     print("\nОтсортировать операции по дате? Да/Нет")
-    sort_choice = input().strip().lower()
-    if sort_choice == "да":
+    if input().strip().lower() == "да":
         print("Отсортировать по возрастанию или по убыванию?")
         order = input().strip().lower()
-        descending = True
-        if "возрастанию" in order:
-            descending = False
+        descending = "убыв" in order
         filtered = sort_by_date(filtered, descending)
 
-    # Фильтр по рублевым
+    # Фильтр по валюте (рублевые)
     print("\nВыводить только рублевые транзакции? Да/Нет")
-    rub_choice = input().strip().lower()
-    if rub_choice == "да":
-        filtered = [t for t in filtered if str(t.get("amount", "")).endswith("руб.")]
+    if input().strip().lower() == "да":
+        filtered = [t for t in filtered if
+                    t.get("operationAmount", {}).get("currency", {}).get("code", "").lower() == "rub"]
 
     # Фильтр по слову
     print("\nОтфильтровать список транзакций по определенному слову в описании? Да/Нет")
-    word_choice = input().strip().lower()
-    if word_choice == "да":
+    if input().strip().lower() == "да":
         print("Введите слово для фильтрации:")
         word = input().strip().lower()
         filtered = [t for t in filtered if word in t.get("description", "").lower()]
 
     print("\nРаспечатываю итоговый список транзакций...")
+
     if not filtered:
         print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
         return
@@ -73,20 +75,21 @@ def main():
 
     for t in filtered:
         date_str = get_date(t.get("date", ""))
-        description = t.get("description", "")
-        amount = t.get("amount", "")
-        currency = t.get("currency", "руб.")  # если нет валюты
+        desc = t.get("description", "")
+        amount = t.get("operationAmount", {}).get("amount", "")
+        currency = t.get("operationAmount", {}).get("currency", {}).get("code", "")
+        from_acc = t.get("from")
+        to_acc = t.get("to")
 
-        # Маскировка счетов и карт
-        try:
-            description = mask_card_or_account(description)
-        except ValueError:
-            pass
+        from_masked = mask_card_or_account(from_acc) if from_acc else ""
+        to_masked = mask_card_or_account(to_acc) if to_acc else ""
 
-        print(f"{date_str} {t.get('description')}")
-        print(f"{description}")
+        print(f"{date_str} {desc}")
+        if from_masked and to_masked:
+            print(f"{from_masked} -> {to_masked}")
+        elif to_masked:
+            print(to_masked)
         print(f"Сумма: {amount} {currency}\n")
-
 
 if __name__ == "__main__":
     main()
