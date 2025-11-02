@@ -3,6 +3,7 @@ import pytest
 from src.generators import card_number_generator  # замените your_module на имя вашего модуля
 from src.generators import filter_by_currency, transaction_descriptions
 
+
 # ======== Тесты для filter_by_currency ========
 
 @pytest.fixture
