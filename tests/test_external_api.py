@@ -1,6 +1,9 @@
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
+
 from src.external_api import convert_to_rub
+
 
 @patch("src.external_api.requests.get")
 def test_convert_to_rub_success(mock_get):
@@ -13,6 +16,7 @@ def test_convert_to_rub_success(mock_get):
     assert result == 600.0
     mock_get.assert_called_once()
 
+
 @patch("src.external_api.requests.get")
 def test_convert_to_rub_no_rate(mock_get):
     mock_response = Mock()
@@ -22,6 +26,7 @@ def test_convert_to_rub_no_rate(mock_get):
 
     with pytest.raises(Exception, match="Курс RUB для валюты USD не найден"):
         convert_to_rub(10, "USD")
+
 
 def test_convert_to_rub_invalid_currency():
     with pytest.raises(ValueError):

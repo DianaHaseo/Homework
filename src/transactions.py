@@ -1,5 +1,6 @@
 from src.external_api import convert_to_rub
 
+
 def get_transaction_amount_in_rub(transaction: dict) -> float:
     """
     Возвращает сумму транзакции в рублях; при валюте USD/EUR конвертирует через API.

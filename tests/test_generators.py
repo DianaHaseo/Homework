@@ -1,5 +1,8 @@
 import pytest
-from src.generators import filter_by_currency, transaction_descriptions, card_number_generator  # замените your_module на имя вашего модуля
+
+from src.generators import card_number_generator  # замените your_module на имя вашего модуля
+from src.generators import filter_by_currency, transaction_descriptions
+
 
 # ======== Тесты для filter_by_currency ========
 
@@ -13,6 +16,7 @@ def transactions():
         {"id": 5, "amount": 50},  # без ключа 'currency'
     ]
 
+
 @pytest.mark.parametrize("currency, expected_ids", [
     ("USD", [1, 3]),
     ("EUR", [2]),
@@ -23,14 +27,17 @@ def test_filter_by_currency(transactions, currency, expected_ids):
     filtered = list(filter_by_currency(transactions, currency))
     assert [tx["id"] for tx in filtered] == expected_ids
 
+
 def test_filter_by_currency_empty_list():
     filtered = list(filter_by_currency([], "USD"))
     assert filtered == []
+
 
 def test_filter_by_currency_no_matching_currency():
     transactions = [{"id": 1, "currency": "EUR"}]
     filtered = list(filter_by_currency(transactions, "USD"))
     assert filtered == []
+
 
 # ======== Тесты для transaction_descriptions ========
 
@@ -42,6 +49,7 @@ def transactions_with_descriptions():
         {"id": 3, "description": "Оплата услуг"},
     ]
 
+
 def test_transaction_descriptions_correct_output(transactions_with_descriptions):
     gen = transaction_descriptions(transactions_with_descriptions)
     descriptions = list(gen)
@@ -52,9 +60,11 @@ def test_transaction_descriptions_correct_output(transactions_with_descriptions)
     ]
     assert descriptions == expected
 
+
 def test_transaction_descriptions_empty_list():
     gen = transaction_descriptions([])
     assert list(gen) == []
+
 
 def test_transaction_descriptions_missing_description():
     transactions = [
@@ -64,6 +74,7 @@ def test_transaction_descriptions_missing_description():
     gen = transaction_descriptions(transactions)
     descriptions = list(gen)
     assert descriptions == ["", "Оплата"]
+
 
 # ======== Тесты для card_number_generator ========
 
@@ -88,6 +99,7 @@ def test_card_number_generator_range(start, end, expected):
     result = list(gen)
     assert result == expected
 
+
 def test_card_number_generator_formatting():
     gen = card_number_generator(1, 1)
     card_number = next(gen)
@@ -96,6 +108,7 @@ def test_card_number_generator_formatting():
     parts = card_number.split(' ')
     assert all(len(part) == 4 for part in parts)
     assert card_number == "0000 0000 0000 0001"
+
 
 def test_card_number_generator_empty_range():
     gen = card_number_generator(5, 4)

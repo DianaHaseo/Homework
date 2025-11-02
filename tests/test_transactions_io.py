@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import mock_open, patch, MagicMock
+from unittest.mock import MagicMock, mock_open, patch
+
 from src.transactions_io import read_transactions_from_csv, read_transactions_from_excel
+
 
 def test_read_transactions_from_csv():
     csv_content = "id,amount,currency\n1,100,RUB\n2,200,USD\n"
@@ -9,6 +10,7 @@ def test_read_transactions_from_csv():
     assert isinstance(result, list)
     assert result[0]['id'] == '1'
     assert result[1]['currency'] == 'USD'
+
 
 @patch("openpyxl.load_workbook")
 def test_read_transactions_from_excel(mock_load_workbook):

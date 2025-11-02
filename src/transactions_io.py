@@ -1,6 +1,8 @@
 import csv
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import openpyxl
+
 
 def read_transactions_from_csv(file_path: str) -> List[Dict[str, Any]]:
     """

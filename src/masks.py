@@ -1,51 +1,45 @@
-import logging
-import os
+from datetime import datetime
 
-# Настройка логгера для модуля masks
-def setup_logger(masks: str) -> logging.Logger:
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
-    logger = logging.getLogger(masks)
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler(f'logs/{masks}.log', mode='w', encoding='utf-8')
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
-    if logger.hasHandlers():
-        logger.handlers.clear()
-    logger.addHandler(file_handler)
-    logger.propagate = False
-    return logger
 
-masks_logger = setup_logger('masks')
+def filter_by_status(transactions, status):
+    """Фильтрует список транзакций по статусу"""
+    return [t for t in transactions if t.get("status") == status]
 
-def get_mask_card_number(card_number: str) -> str:
-    """Маскирует номер карты в формате XXXX XX** **** XXXX. Показывает первые 6 и последние 4 цифры."""
-    digits = "".join(card_number.split())
-    if len(digits) == 0:
-        masks_logger.error("Нулевая длина номера карты")
-        raise ValueError("Нулевая длина номера карты")
-    if len(digits) != 16 or not digits.isdigit():
-        masks_logger.error("Нестандартный номер карты, должно быть 16-значное число")
-        raise ValueError("Нестандартный номер карты, должно быть 16-значное число")
-    first_4 = digits[:4]
-    next_2 = digits[4:6]
-    mask_2 = "**"
-    mask_4 = "****"
-    last_4 = digits[-4:]
-    masked = f"{first_4} {next_2}{mask_2} {mask_4} {last_4}"
-    masks_logger.info(f'Успешно замаскирован номер карты: {masked}')
-    return masked
 
-def get_mask_account(account_number: str) -> str:
-    """Маскирует номер счёта в формате **XXXX. Показывает только последние 4 цифры."""
-    digits = "".join(account_number.split())
-    if len(digits) == 0:
-        masks_logger.error("Нулевая длина номера счета")
-        raise ValueError("Нулевая длина номера счета")
-    if len(digits) != 20 or not digits.isdigit():
-        masks_logger.error("Нестандартный номер счета, должно быть 20-значное число")
-        raise ValueError("Нестандартный номер счета, должно быть 20-значное число")
-    masked = f"**{digits[-4:]}"
-    masks_logger.info(f'Успешно замаскирован номер счета: {masked}')
-    return masked
+def filter_by_word(transactions, word):
+    """Фильтрует транзакции по слову в описании"""
+    return [t for t in transactions if word.lower() in t.get("description", "").lower()]
+
+
+def sort_by_date(transactions: list[dict], descending: bool = True) -> list[dict]:
+    """Сортирует транзакции по дате."""
+    try:
+        return sorted(
+            transactions,
+            key=lambda x: datetime.fromisoformat(x["date"]),
+            reverse=descending
+        )
+    except Exception as e:
+        raise ValueError("Неверный формат даты в данных") from e
+
+
+# Alias для совместимости с тестами
+filter_by_state = filter_by_status
+
+
+# --------------------------
+# Функции маскирования
+# --------------------------
+
+def get_mask_account(account: str) -> str:
+    """Маскирует счет: оставляет только последние 4 цифры"""
+    if len(account) != 20 or not account.isdigit():
+        raise ValueError("Некорректный номер счета")
+    return f"**{account[-4:]}"
+
+
+def get_mask_card_number(card: str) -> str:
+    """Маскирует карту: XXXX XX** **** XXXX"""
+    if len(card) != 16 or not card.isdigit():
+        raise ValueError("Некорректный номер карты")
+    return f"{card[:4]} {card[4:6]}** **** {card[-4:]}"
