@@ -30,11 +30,11 @@ def test_statistics_no_matches(sample_data):
     assert result == {"покупка": 0, "оплата": 0}
 
 
-def test_statistics_invalid_data_type():
-    with pytest.raises(TypeError):
-        process_bank_operations("не список", ["перевод"])
-
-
-def test_statistics_invalid_categories_type(sample_data):
-    with pytest.raises(TypeError):
-        process_bank_operations(sample_data, "вклад")
+@pytest.mark.parametrize("data,categories,exception", [
+    ("not list", ["перевод"], TypeError),
+    ([], "перевод", TypeError),
+    (123, [], TypeError),
+])
+def test_statistics_invalid_types(data, categories, exception):
+    with pytest.raises(exception):
+        process_bank_operations(data, categories)

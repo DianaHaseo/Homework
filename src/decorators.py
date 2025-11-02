@@ -1,6 +1,5 @@
 import functools
-import sys
-import traceback
+
 
 def log(filename=None):
     def decorator(func):
@@ -26,5 +25,7 @@ def log(filename=None):
                 else:
                     print(log_message, end="")
                 raise  # не проглатываем ошибку
+
         return wrapper
+
     return decorator

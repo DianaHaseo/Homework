@@ -34,6 +34,7 @@ def test_search_no_match(transactions_data):
     assert result == []
 
 
-def test_search_invalid_input(transactions_data):
+@pytest.mark.parametrize("invalid_input", [None, "", 123, [], {}])
+def test_search_invalid_input(transactions_data, invalid_input):
     with pytest.raises(ValueError):
-        process_bank_search(transactions_data, "")
+        process_bank_search(transactions_data, invalid_input)

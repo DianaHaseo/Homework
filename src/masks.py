@@ -1,48 +1,45 @@
-import logging
-import os
-import re
-
-# Настройка логгера для модуля masks
-def setup_logger(masks: str) -> logging.Logger:
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
-    logger = logging.getLogger(masks)
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler(f'logs/{masks}.log', mode='w', encoding='utf-8')
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
-    if logger.hasHandlers():
-        logger.handlers.clear()
-    logger.addHandler(file_handler)
-    logger.propagate = False
-    return logger
+from datetime import datetime
 
 
-masks_logger = setup_logger('masks')
+def filter_by_status(transactions, status):
+    """Фильтрует список транзакций по статусу"""
+    return [t for t in transactions if t.get("status") == status]
 
 
-def get_mask_card_number(number: str) -> str:
-    """Маскирует номер карты (16 цифр)."""
-    if len(number) != 16 or not number.isdigit():
-        raise ValueError("Неверный номер карты")
-    return f"{number[:4]} {number[4:6]}** **** {number[-4:]}"
+def filter_by_word(transactions, word):
+    """Фильтрует транзакции по слову в описании"""
+    return [t for t in transactions if word.lower() in t.get("description", "").lower()]
 
 
-def get_mask_account(number: str) -> str:
-    """Маскирует счет (20 цифр)."""
-    if len(number) != 20 or not number.isdigit():
-        raise ValueError("Неверный счет")
-    return f"**{number[-4:]}"
+def sort_by_date(transactions: list[dict], descending: bool = True) -> list[dict]:
+    """Сортирует транзакции по дате."""
+    try:
+        return sorted(
+            transactions,
+            key=lambda x: datetime.fromisoformat(x["date"]),
+            reverse=descending
+        )
+    except Exception as e:
+        raise ValueError("Неверный формат даты в данных") from e
 
 
-def mask_card_or_account(text: str) -> str:
-    """Определяет и маскирует счет или карту в строке."""
-    import re
-    digits = re.findall(r"\d+", text)
-    for number in digits:
-        if len(number) == 16:
-            return get_mask_card_number(number)
-        elif len(number) == 20:
-            return get_mask_account(number)
-    raise ValueError("Не найден номер карты или счета")
+# Alias для совместимости с тестами
+filter_by_state = filter_by_status
+
+
+# --------------------------
+# Функции маскирования
+# --------------------------
+
+def get_mask_account(account: str) -> str:
+    """Маскирует счет: оставляет только последние 4 цифры"""
+    if len(account) != 20 or not account.isdigit():
+        raise ValueError("Некорректный номер счета")
+    return f"**{account[-4:]}"
+
+
+def get_mask_card_number(card: str) -> str:
+    """Маскирует карту: XXXX XX** **** XXXX"""
+    if len(card) != 16 or not card.isdigit():
+        raise ValueError("Некорректный номер карты")
+    return f"{card[:4]} {card[4:6]}** **** {card[-4:]}"

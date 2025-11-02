@@ -1,4 +1,5 @@
 import pytest
+
 from src.masks import get_mask_account, get_mask_card_number
 
 
@@ -12,6 +13,7 @@ from src.masks import get_mask_account, get_mask_card_number
 )
 def valid_card_data(request):
     return request.param
+
 
 @pytest.fixture(
     params=[
@@ -31,9 +33,10 @@ def valid_card_data(request):
 def card_or_account_data(request):
     return request.param
 
+
 @pytest.fixture(params=[
-    "",        # пусто
-    "123",     # слишком короткий
+    "",  # пусто
+    "123",  # слишком короткий
     "abc123",  # буквы
 ])
 def invalid_card_data(request):
@@ -54,11 +57,11 @@ def valid_account_data(request):
 
 @pytest.fixture(
     params=[
-        "",                 # пусто
-        "123",              # слишком короткий
-        "123456789",        # недостаточно цифр
+        "",  # пусто
+        "123",  # слишком короткий
+        "123456789",  # недостаточно цифр
         "123456789012345",  # 15 цифр
-        "abcd1234",         # буквы
+        "abcd1234",  # буквы
     ]
 )
 def invalid_account_data(request):
@@ -83,4 +86,3 @@ def test_get_mask_account_valid(valid_account_data):
 def test_get_mask_account_invalid(invalid_account_data):
     with pytest.raises(ValueError):
         get_mask_account(invalid_account_data)
-

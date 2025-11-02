@@ -1,7 +1,8 @@
 import re
 import pytest
+
 from src.masks import get_mask_account, get_mask_card_number
-from src.widget import mask_card_or_account, get_date
+from src.widget import get_date, mask_card_or_account
 
 
 # -------------------------------
@@ -31,7 +32,7 @@ def card_or_account_data(request):
     params=[
         "В этой строке нет номера",
         "Номер 123456789",  # меньше 10 цифр
-        "Счет 123",         # слишком короткий номер
+        "Счет 123",  # слишком короткий номер
     ]
 )
 def invalid_card_or_account_data(request):
@@ -92,5 +93,5 @@ def test_get_date_valid(valid_date_data):
 
 
 def test_get_date_invalid(invalid_date_data):
-    with pytest.raises((ValueError, TypeError)):
+    with pytest.raises(ValueError):
         get_date(invalid_date_data)
